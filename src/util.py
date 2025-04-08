@@ -307,7 +307,7 @@ def helper_collections(samples, only_rvsm=False):
 
         sample_dict[s["report_id"]].append(temp_dict)
 
-    bug_reports = tsv2dict("../data/Eclipse_Platform_UI.txt")
+    bug_reports = tsv2dict("./data/Eclipse_Platform_UI.txt")
     br2files_dict = {}
 
     for bug_report in bug_reports:

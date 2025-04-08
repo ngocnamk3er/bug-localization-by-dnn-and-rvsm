@@ -74,14 +74,14 @@ def extract_features():
     # Clone git repo to a local folder
     git_clone(
         repo_url="https://github.com/eclipse/eclipse.platform.ui.git",
-        clone_folder="../data/",
+        clone_folder="./data/",
     )
 
     # Read bug reports from tab separated file
-    bug_reports = tsv2dict("../data/Eclipse_Platform_UI.txt")
+    bug_reports = tsv2dict("./data/Eclipse_Platform_UI.txt")
 
     # Read all java source files
-    java_src_dict = get_all_source_code("../data/eclipse.platform.ui/bundles/")
+    java_src_dict = get_all_source_code("./data/eclipse.platform.ui/bundles/")
 
     # Use all CPUs except one to speed up extraction and avoid computer lagging
     batches = Parallel(n_jobs=cpu_count() - 1)(
@@ -93,7 +93,7 @@ def extract_features():
     features = [row for batch in batches for row in batch]
 
     # Save features to a csv file
-    features_path = os.path.normpath("../data/features.csv")
+    features_path = os.path.normpath("./data/features.csv")
     with open(features_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(
