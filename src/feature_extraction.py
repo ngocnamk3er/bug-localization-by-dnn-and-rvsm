@@ -10,7 +10,6 @@ from joblib import Parallel, delayed, cpu_count
 import csv
 import os
 
-
 def extract(i, br, bug_reports, java_src_dict):
     """ Extracts features for 50 wrong(randomly chosen) files for each
         right(buggy) file for the given bug report.
@@ -22,24 +21,25 @@ def extract(i, br, bug_reports, java_src_dict):
         java_src_dict {dictionary} -- A dictionary of java source codes
     """
     print("Bug report : {} / {}".format(i + 1, len(bug_reports)), end="\r")
-
     br_id = br["id"]
     br_date = br["report_time"]
     br_files = br["files"]
     br_raw_text = br["raw_text"]
-
+    count = 0
     features = []
 
     for java_file in br_files:
+        # print("java_file")
         java_file = os.path.normpath(java_file)
-
+        # print(java_file)
         try:
             # Source code of the java file
             src = java_src_dict[java_file]
-
             # rVSM Text Similarity
             rvsm = cosine_sim(br_raw_text, src)
-
+            # print("Cosine Similarity: ", rvsm)
+            # print("rvsm = cosine_sim(br_raw_text, src)")
+            # print(rvsm)
             # Class Name Similarity
             cns = class_name_similarity(br_raw_text, src)
 
@@ -62,9 +62,9 @@ def extract(i, br, bug_reports, java_src_dict):
             ):
                 features.append([br_id, java_file, rvsm, cfs, cns, bfr, bff, 0])
 
-        except:
+        except Exception as e:
+            # print(f"Đã xảy ra lỗi: {e}")
             pass
-
     return features
 
 
@@ -73,16 +73,20 @@ def extract_features():
     """
     # Clone git repo to a local folder
     git_clone(
-        repo_url="https://github.com/eclipse/eclipse.platform.ui.git",
+        repo_url="https://github.com/apache/tomcat",
         clone_folder="./data/",
     )
 
     # Read bug reports from tab separated file
-    bug_reports = tsv2dict("./data/Eclipse_Platform_UI.txt")
+    bug_reports = tsv2dict("./data/Tomcat.txt")
 
     # Read all java source files
-    java_src_dict = get_all_source_code("./data/eclipse.platform.ui/bundles/")
-
+    java_src_dict = get_all_source_code("./data/tomcat/")
+    # print("Java source code loaded")
+    # first_item = next(iter(java_src_dict.items()))
+    # print(first_item)       # Kết quả: ('a', 1)
+    # print("bug_reports[0]['files']")
+    # print(bug_reports[0]['files'])
     # Use all CPUs except one to speed up extraction and avoid computer lagging
     batches = Parallel(n_jobs=cpu_count() - 1)(
         delayed(extract)(i, br, bug_reports, java_src_dict)

@@ -48,9 +48,9 @@ def tsv2dict(tsv_path):
     dict_list = []
     for line in reader:
         line["files"] = [
-            os.path.normpath(f[8:])
+            os.path.normpath(f)
             for f in line["files"].strip().split()
-            if f.startswith("bundles/") and f.endswith(".java")
+            # for f in re.findall(r'java/org/apache.*?\.java', line["files"])
         ]
         line["raw_text"] = line["summary"] + line["description"]
         # line["summary"] = clean_and_split(line["summary"][11:])
@@ -150,6 +150,8 @@ def normalize(text):
 
     return stemmed_tokens
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
 
 def cosine_sim(text1, text2):
     """ Cosine similarity with tfidf
@@ -160,7 +162,7 @@ def cosine_sim(text1, text2):
     """
     vectorizer = TfidfVectorizer(tokenizer=normalize, min_df=1, stop_words="english")
     tfidf = vectorizer.fit_transform([text1, text2])
-    sim = ((tfidf * tfidf.T).A)[0, 1]
+    sim = ((tfidf * tfidf.T).toarray())[0, 1]
 
     return sim
 
@@ -175,6 +177,7 @@ def get_all_source_code(start_dir):
     start_dir = os.path.normpath(start_dir)
     for dir_, dir_names, file_names in os.walk(start_dir):
         for filename in [f for f in file_names if f.endswith(".java")]:
+            print("Reading file: {}".format(filename), end="\r")
             src_name = os.path.join(dir_, filename)
             with open(src_name, "r") as src_file:
                 src = src_file.read()

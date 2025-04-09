@@ -1,6 +1,8 @@
 # VS Code
 .vscode/
-
+data/tomcat
+data/tomcat-clone
+venv/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 src/__pycache__/
